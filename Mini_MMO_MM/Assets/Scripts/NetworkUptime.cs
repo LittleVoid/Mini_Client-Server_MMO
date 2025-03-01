@@ -28,10 +28,8 @@ public class NetworkUptime : NetworkBehaviour
     {
         if (IsServer)
         {
-            // Use Time.deltaTime to accumulate real-time elapsed
             ServerUptimeNetworkVariable.Value += Time.deltaTime;
 
-            // Log every 0.5 seconds for debugging
             if (Time.time - last_t >= 0.5f)
             {
                 last_t = Time.time;
@@ -39,7 +37,6 @@ public class NetworkUptime : NetworkBehaviour
             }
         }
 
-        // Update the UI for clients
         if (!IsServer)
         {
             text.text = ServerUptimeNetworkVariable.Value.ToString("F2") + "s";
