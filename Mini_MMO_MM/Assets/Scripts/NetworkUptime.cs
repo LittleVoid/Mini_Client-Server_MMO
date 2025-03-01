@@ -20,26 +20,29 @@ public class NetworkUptime : NetworkBehaviour
         if (IsServer)
         {
             ServerUptimeNetworkVariable.Value = 0.0f;
-            Debug.Log("Server's uptime var initialized to: " + ServerUptimeNetworkVariable.Value);
+            Debug.Log("Server's uptime initialized to: " + ServerUptimeNetworkVariable.Value);
         }
     }
 
     void Update()
     {
-        var t_now = Time.time;
         if (IsServer)
         {
-            ServerUptimeNetworkVariable.Value = ServerUptimeNetworkVariable.Value + 0.1f;
-            if (t_now - last_t > 0.5f)
+            // Use Time.deltaTime to accumulate real-time elapsed
+            ServerUptimeNetworkVariable.Value += Time.deltaTime;
+
+            // Log every 0.5 seconds for debugging
+            if (Time.time - last_t >= 0.5f)
             {
-                last_t = t_now;
-                Debug.Log("Server uptime var has been updated to: " + ServerUptimeNetworkVariable.Value);
+                last_t = Time.time;
+                Debug.Log("Server uptime: " + ServerUptimeNetworkVariable.Value.ToString("F2") + " seconds");
             }
         }
 
+        // Update the UI for clients
         if (!IsServer)
         {
-            text.text = ServerUptimeNetworkVariable.Value.ToString();
+            text.text = ServerUptimeNetworkVariable.Value.ToString("F2") + "s";
         }
     }
 }
