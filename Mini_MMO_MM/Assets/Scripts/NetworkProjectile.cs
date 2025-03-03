@@ -1,22 +1,13 @@
-using Unity.Netcode;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class NetworkProjectile : NetworkBehaviour
+public class NetworkProjectiile : MonoBehaviour
 {
-    public float lifetime = 3f;
+    public float speed = 15f;
 
-    public override void OnNetworkSpawn()
+    private void Update()
     {
-        if (IsServer) StartCoroutine(DestroyAfterDelay());
-    }
-
-    private System.Collections.IEnumerator DestroyAfterDelay()
-    {
-        yield return new WaitForSeconds(lifetime);
-
-        if (IsServer && IsSpawned)
-        {
-            GetComponent<NetworkObject>().Despawn(true);
-        }
+        transform.Translate(Vector3.forward * speed * Time.deltaTime);    
     }
 }
