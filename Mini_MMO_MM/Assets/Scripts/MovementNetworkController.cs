@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MovementNetworkController : NetworkBehaviour
 {
+    public int MovementSpeed = 250;
     public NetworkVariable<Vector3> Position = new();
 
     [Rpc(SendTo.Server)]
@@ -17,7 +18,7 @@ public class MovementNetworkController : NetworkBehaviour
             float moveX = Input.GetAxis("Horizontal");
             float moveZ = Input.GetAxis("Vertical");
 
-            Vector3 movement = new Vector3(moveX, 0f, moveZ) * 5 * Time.deltaTime;
+            Vector3 movement = new Vector3(moveX, 0f, moveZ) * MovementSpeed * Time.deltaTime;
             transform.Translate(movement, Space.World);
 
             SubmitPositionRequestServerRpc(transform.position);
