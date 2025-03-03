@@ -16,4 +16,10 @@ public class ConnectionMenu : MonoBehaviour
         NetworkManager.Singleton.StartHost();
         gameObject.SetActive(false);
     }
+
+    public void OnServerButtonClick()
+    {
+        NetworkManager.Singleton.StartServer();
+        gameObject.SetActive(false);
+    }
 }
