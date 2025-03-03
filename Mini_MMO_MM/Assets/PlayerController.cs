@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
     public GameObject projectilePrefab;
-
     float speed = 10f;
     CharacterController characterController;
     Material material;
@@ -28,7 +26,6 @@ public class PlayerController : NetworkBehaviour
         material = renderer.material;
         int randoIndex = Random.Range(0, colorList.Count);
 
-
         color.OnValueChanged += OnColorChanged;
 
         if (IsOwner)
@@ -48,7 +45,6 @@ public class PlayerController : NetworkBehaviour
         Vector3 forwardMovement = Vector3.forward * Input.GetAxis("Vertical") * speed * Time.deltaTime;
         Vector3 motion = horizontalMovement + forwardMovement;
         characterController.Move(motion);
-        
 
         if (Input.GetKeyDown(KeyCode.C))
         {
@@ -58,16 +54,29 @@ public class PlayerController : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-           SpawnProjectileRpc(transform.position, Quaternion.identity); 
+            Vector3 spawnPosition = transform.position;
+            Vector3 shootDirection = GetMouseDirection();
+            Quaternion rotation = Quaternion.LookRotation(shootDirection);
+            SpawnProjectileRpc(spawnPosition, rotation);
         }
+    }
 
+    private Vector3 GetMouseDirection()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Vector3 direction = (hit.point - transform.position).normalized;
+            return new Vector3(direction.x, 0, direction.z);
+        }
+        return transform.forward;
     }
 
     [Rpc(SendTo.Server)]
     private void SpawnProjectileRpc(Vector3 position, Quaternion rotation)
     {
-        var projetileInstance = Instantiate(projectilePrefab, position, rotation);
-        projetileInstance.GetComponent<NetworkObject>().Spawn();
+        var projectileInstance = Instantiate(projectilePrefab, position, rotation);
+        projectileInstance.GetComponent<NetworkObject>().Spawn();
     }
 
     private void OnColorChanged(Color previous, Color newColor)
