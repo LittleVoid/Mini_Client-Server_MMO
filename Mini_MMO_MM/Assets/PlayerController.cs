@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
+    public GameObject projectilePrefab;
+
     float speed = 10f;
     CharacterController characterController;
     Material material;
@@ -52,6 +55,19 @@ public class PlayerController : NetworkBehaviour
             int randoIndex = Random.Range(0, colorList.Count);
             color.Value = colorList[randoIndex];
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+           SpawnProjectileRpc(transform.position, Quaternion.identity); 
+        }
+
+    }
+
+    [Rpc(SendTo.Server)]
+    private void SpawnProjectileRpc(Vector3 position, Quaternion rotation)
+    {
+        var projetileInstance = Instantiate(projectilePrefab, position, rotation);
+        projetileInstance.GetComponent<NetworkObject>().Spawn();
     }
 
     private void OnColorChanged(Color previous, Color newColor)
