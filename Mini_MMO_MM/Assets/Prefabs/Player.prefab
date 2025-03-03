@@ -218,3 +218,4 @@ MonoBehaviour:
   projectilePrefab: {fileID: 2537625737222049559, guid: 6cf3716b3afbebb469b2ffaf36727b48, type: 3}
   shootForce: 50
   projectileLifetime: 3
+  shootCooldown: 0.5

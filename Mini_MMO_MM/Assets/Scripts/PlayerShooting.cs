@@ -15,24 +15,38 @@ public class PlayerShooting : NetworkBehaviour
         if (IsOwner && Input.GetKeyDown(KeyCode.Space) && Time.time > lastShotTime + shootCooldown)
         {
             lastShotTime = Time.time;
-            ShootServerRpc();
+            ShootServerRpc(GetAimDirection());
         }
     }
 
-    [ServerRpc]
-    private void ShootServerRpc(ServerRpcParams rpcParams = default)
+    private Vector3 GetAimDirection()
     {
-        Vector3 spawnPosition = transform.position + transform.forward * 1.5f; // Slightly in front
-        Quaternion spawnRotation = Quaternion.LookRotation(transform.forward);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        if (groundPlane.Raycast(ray, out float enter))
+        {
+            Vector3 hitPoint = ray.GetPoint(enter);
+            Vector3 direction = hitPoint - transform.position;
+            direction.y = 0; // Lock movement to XZ plane
+            return direction.normalized;
+        }
+        return transform.forward;
+    }
+
+    [ServerRpc]
+    private void ShootServerRpc(Vector3 direction, ServerRpcParams rpcParams = default)
+    {
+        Vector3 spawnPosition = transform.position + direction * 1.5f;
+        Quaternion spawnRotation = Quaternion.LookRotation(direction);
 
         GameObject projectile = Instantiate(projectilePrefab, spawnPosition, spawnRotation);
         NetworkObject networkObject = projectile.GetComponent<NetworkObject>();
-        networkObject.SpawnWithOwnership(rpcParams.Receive.SenderClientId); // Assign ownership
+        networkObject.SpawnWithOwnership(rpcParams.Receive.SenderClientId);
 
         Rigidbody rb = projectile.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.AddForce(transform.forward * shootForce, ForceMode.Impulse);
+            rb.AddForce(direction * shootForce, ForceMode.Impulse);
         }
     }
 }
