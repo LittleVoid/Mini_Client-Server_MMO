@@ -1,26 +1,40 @@
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class NetworkUptime : NetworkBehaviour
 {
-    private NetworkVariable<float> ServerUptimeNetworkVariable = new NetworkVariable<float>();
-    private float last_t = 0.0f;
+    private NetworkVariable<float> ServerUptime = new NetworkVariable<float>(
+        default,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
 
     [SerializeField] private TextMeshProUGUI text;
+    private float lastUpdate = 0.0f;
 
     private void Start()
     {
-        Assert.IsNotNull(text);
+        if (text == null)
+        {
+            text = FindObjectOfType<TextMeshProUGUI>();
+            if (text == null)
+            {
+                Debug.LogError("TextMeshProUGUI nicht gefunden! Bitte zuweisen.");
+                return;
+            }
+        }
     }
 
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         {
-            ServerUptimeNetworkVariable.Value = 0.0f;
-            Debug.Log("Server's uptime initialized to: " + ServerUptimeNetworkVariable.Value);
+            ServerUptime.Value = 0.0f;
+        }
+        else
+        {
+            ServerUptime.OnValueChanged += OnUptimeChanged;
         }
     }
 
@@ -28,21 +42,26 @@ public class NetworkUptime : NetworkBehaviour
     {
         if (IsServer)
         {
-            // Use Time.deltaTime to accumulate real-time elapsed
-            ServerUptimeNetworkVariable.Value += Time.deltaTime;
+            ServerUptime.Value += Time.deltaTime;
 
-            // Log every 0.5 seconds for debugging
-            if (Time.time - last_t >= 0.5f)
+            if (Time.time - lastUpdate >= 0.5f)
             {
-                last_t = Time.time;
-                Debug.Log("Server uptime: " + ServerUptimeNetworkVariable.Value.ToString("F2") + " seconds");
+                lastUpdate = Time.time;
+                Debug.Log("Server-Uptime: " + ServerUptime.Value.ToString("F2") + " Sekunden");
             }
         }
 
-        // Update the UI for clients
-        //if (!IsServer)
-        //{
-            text.text = ServerUptimeNetworkVariable.Value.ToString("F2") + "s";
-        //}
+        if (text != null)
+        {
+            text.text = ServerUptime.Value.ToString("F2") + "s";
+        }
+    }
+
+    private void OnUptimeChanged(float oldValue, float newValue)
+    {
+        if (text != null)
+        {
+            text.text = newValue.ToString("F2") + "s";
+        }
     }
 }
