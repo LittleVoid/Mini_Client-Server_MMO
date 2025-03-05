@@ -46,6 +46,9 @@ public class PlayerController : NetworkBehaviour
         Vector3 motion = horizontalMovement + forwardMovement;
         characterController.Move(motion);
 
+        transform.position = new Vector3(transform.position.x, -4, transform.position.z);
+
+
         if (Input.GetKeyDown(KeyCode.C))
         {
             int randoIndex = Random.Range(0, colorList.Count);
