@@ -8,7 +8,7 @@ public class PlayerController : NetworkBehaviour
     float speed = 10f;
     CharacterController characterController;
     Material material;
-    MeshRenderer renderer;
+    MeshRenderer meshrenderer;
     NetworkVariable<Color> color = new NetworkVariable<Color>(writePerm: NetworkVariableWritePermission.Owner);
 
     List<Color> colorList = new List<Color>()
@@ -22,8 +22,8 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         characterController = GetComponent<CharacterController>();
-        renderer = GetComponent<MeshRenderer>();
-        material = renderer.material;
+        meshrenderer = GetComponent<MeshRenderer>();
+        material = meshrenderer.material;
         int randoIndex = Random.Range(0, colorList.Count);
 
         color.OnValueChanged += OnColorChanged;
